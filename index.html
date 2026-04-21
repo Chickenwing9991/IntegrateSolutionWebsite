@@ -1263,6 +1263,20 @@ section {
   box-shadow: 0 10px 30px -10px rgba(59, 130, 246, 0.5);
 }
 
+.form-note {
+  margin-top: 14px;
+  font-family: var(--f-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--paper-mute);
+  text-align: center;
+  transition: color 0.2s;
+}
+.form-note-error {
+  color: var(--danger);
+}
+
 /* ─── FOOTER ──────────────────────────────────── */
 footer {
   border-top: var(--bezel);
@@ -1459,40 +1473,43 @@ footer {
           <circle cx="15" cy="15" r="2" fill="currentColor"/>
         </svg>
       </div>
-      <h3>Ignition MES &amp; Operations</h3>
+      <h3>Ignition Development</h3>
       <p>
-        End-to-end MES and operations platforms on Ignition Perspective —
-        OEE, downtime tracking, electronic work instructions, traceability,
-        and production reporting. Deployed across manufacturing lines,
-        pharmaceutical suites, and automotive plants with multi-site
-        gateways and vertical-specific customization.
+        Every flavor of Ignition, from the ground up. MES and operations
+        platforms, SCADA systems, HMI design, and custom standalone
+        applications — all built on Perspective, Vision, and the gateway
+        layer. Whatever the use case, Ignition is our home turf.
       </p>
       <div class="service-tags">
-        <span class="service-tag">Perspective</span>
-        <span class="service-tag">OEE / KPI</span>
-        <span class="service-tag">Historian</span>
-        <span class="service-tag">Multi-Site</span>
+        <span class="service-tag">MES</span>
+        <span class="service-tag">SCADA</span>
+        <span class="service-tag">HMI</span>
+        <span class="service-tag">Standalone Apps</span>
       </div>
     </div>
 
-    <!-- SCADA -->
+    <!-- Vertical Solutions -->
     <div class="service">
       <div class="service-num">// 002</div>
       <div class="service-icon">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M3 12h4l3-9 4 18 3-9h4"/>
+          <path d="M3 21h18"/>
+          <path d="M5 21V10l4-3 4 3v11"/>
+          <path d="M13 21v-6l4-2 4 2v6"/>
+          <circle cx="9" cy="14" r="0.5" fill="currentColor"/>
+          <circle cx="17" cy="17" r="0.5" fill="currentColor"/>
         </svg>
       </div>
-      <h3>SCADA &amp; Control Systems</h3>
+      <h3>Vertical Solutions</h3>
       <p>
-        Process visualization, alarming, and operator interfaces that run 24/7 —
-        in refineries, data centers, pipelines, and utilities. HMI design built
-        for operator clarity under real operating conditions.
+        Industry-tuned deployments across manufacturing, data centers,
+        automotive, oil &amp; gas, pharmaceutical, and critical infrastructure —
+        each with its own operational DNA, compliance posture, and data model.
       </p>
       <div class="service-tags">
-        <span class="service-tag">Vision</span>
-        <span class="service-tag">MQTT</span>
-        <span class="service-tag">Alarming</span>
+        <span class="service-tag">Manufacturing</span>
+        <span class="service-tag">Data Centers</span>
+        <span class="service-tag">Pharma</span>
       </div>
     </div>
 
@@ -1753,7 +1770,7 @@ footer {
   <div class="contact">
     <div class="reveal">
       <h2 class="contact-headline">
-        Got an <span class="accent">Ignition</span> project?
+        Have a <span class="accent">project?</span>
       </h2>
       <p class="contact-lead">
         The best conversations start with a specific challenge. Whether it's
@@ -1784,23 +1801,23 @@ footer {
 
       <div class="form-group">
         <label class="form-label">Name</label>
-        <input type="text" class="form-input" placeholder="Your name" />
+        <input type="text" id="f-name" class="form-input" placeholder="Your name" />
       </div>
 
       <div class="form-group">
         <label class="form-label">Company</label>
-        <input type="text" class="form-input" placeholder="Company" />
+        <input type="text" id="f-company" class="form-input" placeholder="Company" />
       </div>
 
       <div class="form-group">
         <label class="form-label">Email</label>
-        <input type="email" class="form-input" placeholder="name@company.com" />
+        <input type="email" id="f-email" class="form-input" placeholder="name@company.com" />
       </div>
 
       <div class="form-group">
         <label class="form-label">Project Type</label>
-        <select class="form-select">
-          <option>Ignition MES deployment</option>
+        <select id="f-type" class="form-select">
+          <option>Ignition Development</option>
           <option>SCADA modernization</option>
           <option>Database performance</option>
           <option>Custom integration</option>
@@ -1812,10 +1829,11 @@ footer {
 
       <div class="form-group">
         <label class="form-label">Tell us about the project</label>
-        <textarea class="form-textarea" placeholder="Current stack, pain points, timeline..."></textarea>
+        <textarea id="f-message" class="form-textarea" placeholder="Current stack, pain points, timeline..."></textarea>
       </div>
 
       <button class="form-submit" type="button" onclick="handleSubmit()">Send Inquiry →</button>
+      <div id="form-note" class="form-note">Opens in your email app &middot; sends to system@integratesolutions.io</div>
     </div>
   </div>
 </section>
@@ -1881,11 +1899,58 @@ document.querySelectorAll('.reveal').forEach((el) => io.observe(el));
   }
 })();
 
-/* ─── Form handler (demo) ─── */
+/* ─── Form handler: open pre-filled mailto ─── */
 function handleSubmit() {
   const btn = document.querySelector('.form-submit');
+  const note = document.getElementById('form-note');
+
+  const name    = (document.getElementById('f-name').value    || '').trim();
+  const company = (document.getElementById('f-company').value || '').trim();
+  const email   = (document.getElementById('f-email').value   || '').trim();
+  const type    = document.getElementById('f-type').value;
+  const message = (document.getElementById('f-message').value || '').trim();
+
+  // Minimal validation
+  const missing = [];
+  if (!name)    missing.push('Name');
+  if (!email)   missing.push('Email');
+  if (!message) missing.push('Project description');
+
+  const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  if (email && !emailOk) missing.push('a valid email');
+
+  if (missing.length) {
+    note.textContent = 'Please fill in: ' + missing.join(', ');
+    note.classList.add('form-note-error');
+    return;
+  }
+
+  note.classList.remove('form-note-error');
+  note.textContent = 'Opens in your email app · sends to system@integratesolutions.io';
+
+  // Build the email body
+  const subject = `New Inquiry — ${type}${company ? ' — ' + company : ''}`;
+  const body =
+    `Name:     ${name}\n` +
+    `Company:  ${company || '(not provided)'}\n` +
+    `Email:    ${email}\n` +
+    `Project:  ${type}\n\n` +
+    `— — —\n\n` +
+    `${message}\n\n` +
+    `— — —\n` +
+    `Sent from integratesolutions.io contact form`;
+
+  const href =
+    'mailto:system@integratesolutions.io' +
+    '?subject=' + encodeURIComponent(subject) +
+    '&body='    + encodeURIComponent(body);
+
+  // Open in the user's default mail app
+  window.location.href = href;
+
+  // Visual confirmation
   const original = btn.textContent;
-  btn.textContent = 'Sent ✓';
+  btn.textContent = 'Opening email app...';
   btn.style.background = 'var(--mint)';
   setTimeout(() => {
     btn.textContent = original;
